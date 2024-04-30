@@ -1,7 +1,7 @@
 Block Header: Version : 1 , 
     Previous BlockHash :0000000000000000000000000000000000000000000000000000000000000000,
     MerkleRoot : 31e872c28f4b6d0bd4df6659b4cae4c3668c345287d58ede4d6e20fffe07bbc3 ,
-    TimeStamp : 1714416027 ,
+    TimeStamp : 1714459972 ,
     Bits : 419668748 ,
-    Nonce : 280068
+    Nonce : 14057
 Serialized Coinbase Transaction: {"version":1,"locktime":0,"vin":[],"vout":[{"scriptpubkey":"76a9146085312a9c500ff9cc35b571b0a1e5efb7fb9f1688ac","scriptpubkey_asm":"OP_DUP OP_HASH160 OP_PUSHBYTES_20 6085312a9c500ff9cc35b571b0a1e5efb7fb9f16 OP_EQUALVERIFY OP_CHECKSIG","scriptpubkey_type":"p2pkh","scriptpubkey_address":"19oMRmCWMYuhnP5W61ABrjjxHc6RphZh11","value":2500000}]}

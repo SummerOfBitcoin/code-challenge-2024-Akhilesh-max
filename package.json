@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bitcoinjs-lib": "^6.1.5",
     "secp256k1": "^5.0.0"
   }
 }

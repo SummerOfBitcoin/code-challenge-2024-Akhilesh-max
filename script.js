@@ -1,6 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const secp256k1 = require('secp256k1');
+const bitcoin = require('bitcoinjs-lib');
 
 // Load transactions from mempool
 const mempoolDir = './mempool';
@@ -71,34 +72,49 @@ validTransactions.forEach(transaction => {
     fs.appendFileSync(outputFile, `Transaction ID: ${JSON.stringify(transaction.vin[0].txid)}\n`); // Assuming txid is within the first input
 });
 
-
-// Helper functions
 function validateTransaction(transaction) {
-    // Check if transaction has valid vin and vout
-    if (!transaction.vin || !Array.isArray(transaction.vin)) {
-        console.error(`Transaction ${transaction.txid} is invalid: missing or invalid vin`);
-        return false;
-    }
-    if (!transaction.vout || !Array.isArray(transaction.vout)) {
-        console.error(`Transaction ${transaction.txid} is invalid: missing or invalid vout`);
-        return false;
-    }
-
-    // Check if each input and output has required fields
-    for (let input of transaction.vin) {
-        if (!input.scriptSig || !input.prevout || !input.prevout.txid || input.prevout.index == null) {
-            console.error(`Transaction ${transaction.txid} is invalid: input ${JSON.stringify(input)} is missing required fields`);
+    try {
+        // Check if transaction has valid vin and vout
+        if (!transaction.vin || !Array.isArray(transaction.vin)) {
+            console.error(`Transaction ${transaction.txid} is invalid: missing or invalid vin`);
             return false;
         }
-    }
-    for (let output of transaction.vout) {
-        if (!output.scriptpubkey || output.value == null) {
-            console.error(`Transaction ${transaction.txid} is invalid: output ${JSON.stringify(output)} is missing required fields`);
+        if (!transaction.vout || !Array.isArray(transaction.vout)) {
+            console.error(`Transaction ${transaction.txid} is invalid: missing or invalid vout`);
             return false;
         }
-    }
 
-    return true;
+        // Check if each input and output has required fields
+        for (let input of transaction.vin) {
+            if (!input.scriptSig || !input.prevout || !input.prevout.txid || input.prevout.index == null) {
+                console.error(`Transaction ${transaction.txid} is invalid: input ${JSON.stringify(input)} is missing required fields`);
+                return false;
+            }
+        }
+        for (let output of transaction.vout) {
+            if (!output.scriptpubkey || output.value == null) {
+                console.error(`Transaction ${transaction.txid} is invalid: output ${JSON.stringify(output)} is missing required fields`);
+                return false;
+            }
+        }
+
+        // Use bitcoinjs-lib to validate the transaction
+        const tx = bitcoin.Transaction.fromHex(JSON.stringify(transaction));
+        const isValid = tx.ins.every((input, i) => {
+            const keyPair = bitcoin.ECPair.fromPublicKeyBuffer(input.pubKey);
+            return tx.verifyInput(i, keyPair);
+        });
+
+        if (!isValid) {
+            console.error(`Transaction ${transaction.txid} is invalid: failed bitcoinjs-lib validation`);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error(`Transaction ${transaction.txid} is invalid: ${error.message}`);
+        return false;
+    }
 }
 
 function getMerkleRoot(transactions) {
